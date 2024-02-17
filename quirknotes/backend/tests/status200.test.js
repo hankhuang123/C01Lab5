@@ -100,9 +100,9 @@ describe("Note API Tests", () => {
 
     // Verification: Fetch the note and verify changes
     const getResponse = await axios.get(`${baseUrl}/getAllNotes`);
-    const updatedNote = getResponse.data.response.find(note => note._id === insertedId);
-    expect(updatedNote.title).toBe("New Title");
-    expect(updatedNote.content).toBe("New Content");
+    const newNote = getResponse.data.response.find(note => note._id === insertedId);
+    expect(newNote.title).toBe("New Title");
+    expect(newNote.content).toBe("New Content");
     
   });
 
@@ -123,10 +123,10 @@ describe("Note API Tests", () => {
 
     // Verification
     const getResponse = await axios.get(`${baseUrl}/getAllNotes`);
-    const updatedNote = getResponse.data.response.find(note => note._id === insertedId);
-    expect(updatedNote.title).toBe("Title Only After");
+    const newNote = getResponse.data.response.find(note => note._id === insertedId);
+    expect(newNote.title).toBe("Title Only After");
     // Content should remain unchanged
-    expect(updatedNote.content).toBe("Content Unchanged");
+    expect(newNote.content).toBe("Content Unchanged");
   });
 
   test("/patchNote - Patch with just content", async () => {
