@@ -74,7 +74,7 @@ describe("Note API Tests", () => {
   test("/deleteNote - Delete a note", async () => {
 
   // Arrange: Create a new note and verify its existence
-  const noteId = await setupNote("Delete Me", "Delete this note");
+  const noteId = await setupNote("Delete things i wnat", "Delete all of it");
   let response = await axios.get(`${baseUrl}/getAllNotes`);
   expect(response.data.response.find(note => note._id === noteId)).toBeDefined();
 
