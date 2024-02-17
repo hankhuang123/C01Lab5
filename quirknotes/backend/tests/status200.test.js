@@ -28,7 +28,7 @@
 const axios = require('axios');
 const baseUrl = 'http://localhost:4000';
 
-const createNote = async (title, content, color = null) => {
+const setupNote = async (title, content, color = null) => {
   const data = { title, content };
   if (color) data.color = color; //if color exist, add into the data
   const response = await axios.post(`${baseUrl}/postNote`, data);
@@ -39,6 +39,7 @@ const createNote = async (title, content, color = null) => {
 const deleteAllNotes = async () => {
   await axios.delete(`${baseUrl}/deleteAllNotes`);
 };
+
 describe("Note API Tests", () => {
   beforeEach(async () => {
     // Ensure the database is in a known state before each test
@@ -53,8 +54,8 @@ describe("Note API Tests", () => {
 
   test("/getAllNotes - Return list of two notes for getAllNotes", async () => {
     // Setup: Create two notes
-    await createNote("Test Title 1", "Test Content 1");
-    await createNote("Test Title 2", "Test Content 2");
+    await setupNote("Test Title 1", "Test Content 1");
+    await setupNote("Test Title 2", "Test Content 2");
   
     const notesResponse = await axios.get(`${baseUrl}/getAllNotes`);
     expect(notesResponse.status).toBe(200);
@@ -68,7 +69,7 @@ describe("Note API Tests", () => {
 
   test("/deleteNote - Delete a note", async () => {
     // Setup: Create a note to delete
-    const insertedId = await createNote("Delete Me", "Delete this note");
+    const insertedId = await setupNote("Delete Me", "Delete this note");
     //can find
     const getResponse = await axios.get(`${baseUrl}/getAllNotes`);
     expect(getResponse.data.response.find(note => note._id === insertedId)).toBeDefined();
@@ -81,9 +82,25 @@ describe("Note API Tests", () => {
     expect(getResponse2.data.response.find(note => note._id === insertedId)).toBeUndefined();
   });
 
+  test("/updateNoteColor - Update color of a note to red (#FF0000)", async () => {
+    // Setup: Create a note to update its color
+    const insertedId = await setupNote("Color Change", "This note will change color.");
+
+    const updateResponse = await axios.patch(`${baseUrl}/updateNoteColor/${insertedId}`, {
+      color: "#FF0000"
+    });
+    expect(updateResponse.status).toBe(200);
+
+    // Verification: Fetch the note and verify the color change
+    const getResponse = await axios.get(`${baseUrl}/getAllNotes`);
+    const updatedNote = getResponse.data.response.find(note => note._id === insertedId);
+    expect(updatedNote.color).toBe("#FF0000");
+  });
+
+
   test("/patchNote - Patch with content and title", async () => {
     // Setup: Create a note to patch
-    const insertedId = await createNote("Patch Title", "Patch Content");
+    const insertedId = await setupNote("Patch Title", "Patch Content");
 
     //
     const originResponse = await axios.get(`${baseUrl}/getAllNotes`);
@@ -108,7 +125,7 @@ describe("Note API Tests", () => {
 
   test("/patchNote - Patch with just title", async () => {
     // Setup: Create a note
-    const insertedId = await createNote("Title Only Before", "Content Unchanged");
+    const insertedId = await setupNote("Title Only Before", "Content Unchanged");
 
     const originResponse = await axios.get(`${baseUrl}/getAllNotes`);
     const checkNote = originResponse.data.response.find(note => note._id === insertedId);
@@ -131,7 +148,7 @@ describe("Note API Tests", () => {
 
   test("/patchNote - Patch with just content", async () => {
     // Setup
-    const insertedId = await createNote("Title Unchanged", "Content Only Before");
+    const insertedId = await setupNote("Title Unchanged", "Content Only Before");
 
     const originResponse = await axios.get(`${baseUrl}/getAllNotes`);
     const checkNote = originResponse.data.response.find(note => note._id === insertedId);
@@ -154,7 +171,7 @@ describe("Note API Tests", () => {
 
   test("/deleteAllNotes - Delete one note", async () => {
     // Setup: Ensure there's only one note to delete
-    await createNote("Single Note", "This is the only note.");
+    await setupNote("Single Note", "This is the only note.");
 
     const deleteResponse = await axios.delete(`${baseUrl}/deleteAllNotes`);
     expect(deleteResponse.status).toBe(200);
@@ -166,9 +183,9 @@ describe("Note API Tests", () => {
 
   test("/deleteAllNotes - Delete three notes", async () => {
     // Setup: Create three notes
-    await createNote("Note 1", "Content 1");
-    await createNote("Note 2", "Content 2");
-    await createNote("Note 3", "Content 3");
+    await setupNote("Note 1", "Content 1");
+    await setupNote("Note 2", "Content 2");
+    await setupNote("Note 3", "Content 3");
 
     const deleteResponse = await axios.delete(`${baseUrl}/deleteAllNotes`);
     expect(deleteResponse.status).toBe(200);
@@ -178,20 +195,6 @@ describe("Note API Tests", () => {
     expect(getResponse.data.response.length).toBe(0);
   });
 
-  test("/updateNoteColor - Update color of a note to red (#FF0000)", async () => {
-    // Setup: Create a note to update its color
-    const insertedId = await createNote("Color Change", "This note will change color.");
-
-    const updateResponse = await axios.patch(`${baseUrl}/updateNoteColor/${insertedId}`, {
-      color: "#FF0000"
-    });
-    expect(updateResponse.status).toBe(200);
-
-    // Verification: Fetch the note and verify the color change
-    const getResponse = await axios.get(`${baseUrl}/getAllNotes`);
-    const updatedNote = getResponse.data.response.find(note => note._id === insertedId);
-    expect(updatedNote.color).toBe("#FF0000");
-  });
 });
 
   
